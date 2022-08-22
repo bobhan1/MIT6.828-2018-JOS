@@ -95,6 +95,7 @@ boot_alloc(uint32_t n)
 	if (!nextfree) {
 		extern char end[];
 		nextfree = ROUNDUP((char *) end, PGSIZE);
+		cprintf("end:%p\n", nextfree);
 	}
 
 	// Allocate a chunk large enough to hold 'n' bytes, then update
