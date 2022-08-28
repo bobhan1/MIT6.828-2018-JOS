@@ -209,8 +209,14 @@ mem_init(void)
 	//       overwrite memory.  Known as a "guard page".
 	//     Permissions: kernel RW, user NONE
 	// Your code goes here:
-	boot_map_region(kern_pgdir, KSTACKTOP-KSTKSIZE,
-		ROUNDUP(KSTKSIZE, PGSIZE), PADDR(bootstack), PTE_W | PTE_P);
+	
+	// boot_map_region(kern_pgdir, KSTACKTOP-KSTKSIZE,
+	// 	ROUNDUP(KSTKSIZE, PGSIZE), PADDR(bootstack), PTE_W | PTE_P);
+	
+	
+	// Initialize the SMP-related parts of the memory map
+	mem_init_mp();
+
 
 	//////////////////////////////////////////////////////////////////////
 	// Map all of physical memory at KERNBASE.
@@ -220,11 +226,6 @@ mem_init(void)
 	// we just set up the mapping anyway.
 	// Permissions: kernel RW, user NONE
 	// Your code goes here:
-
-
-	// Initialize the SMP-related parts of the memory map
-	mem_init_mp();
-
 
 	boot_map_region(kern_pgdir, KERNBASE, 
 		ROUNDUP(0xffffffff - KERNBASE, PGSIZE), 0, PTE_P | PTE_W);
@@ -276,7 +277,15 @@ mem_init_mp(void)
 	//     Permissions: kernel RW, user NONE
 	//
 	// LAB 4: Your code here:
+	size_t i = 0;
+	uintptr_t stop;
 
+	for (; i < NCPU; i++) {
+		stop = KSTACKTOP - i * (KSTKSIZE + KSTKGAP);
+		// cprintf("[cpu%u]: %u, percpu_kstacks[%u]:%u, phy:%u\n", 
+		// 	thiscpu->cpu_id, stop - KSTKSIZE, i, percpu_kstacks[i], PADDR(percpu_kstacks[i]));
+		boot_map_region(kern_pgdir, stop - KSTKSIZE, KSTKSIZE, PADDR(percpu_kstacks[i]), PTE_P | PTE_W);
+	}
 }
 
 // --------------------------------------------------------------
@@ -311,7 +320,15 @@ page_init(void)
 
 	//  2) The rest of base memory, [PGSIZE, npages_basemem * PGSIZE)
 	//     is free.
+
+	size_t mmio_page_num = MPENTRY_PADDR / PGSIZE;
+
 	for (i = 1; i < npages_basemem; i++) {
+		// mark the physical page at MPENTRY_PADDR as in use for booting up APs
+		if (i == mmio_page_num) {
+			pages[i].pp_ref = 1;
+			continue;
+		}
 		pages[i].pp_ref = 0;
 		pages[i].pp_link = page_free_list;
 		page_free_list = &pages[i];
@@ -632,7 +649,17 @@ mmio_map_region(physaddr_t pa, size_t size)
 	// Hint: The staff solution uses boot_map_region.
 	//
 	// Your code here:
-	panic("mmio_map_region not implemented");
+	
+	size_t sz = ROUNDUP(size, PGSIZE);
+	void * ret;
+
+	if (base + sz >= MMIOLIM) {
+		panic("mmio_map_region: overflow MMIOLIM!\n");
+	}
+	boot_map_region(kern_pgdir, base, sz, pa, PTE_PCD | PTE_PWT | PTE_W);
+	ret = (void *)base;
+	base += sz;
+	return ret;
 }
 
 static uintptr_t user_mem_check_addr;
@@ -888,6 +915,8 @@ check_kern_pgdir(void)
 	for (n = 0; n < NCPU; n++) {
 		uint32_t base = KSTACKTOP - (KSTKSIZE + KSTKGAP) * (n + 1);
 		for (i = 0; i < KSTKSIZE; i += PGSIZE)
+			// cprintf("[cpu:%u]:lhs:%u, percpu_sta:%u, paddr:%u\n", thiscpu->cpu_id, 
+			// 	check_va2pa(pgdir, base + KSTKGAP + i), percpu_kstacks[n], PADDR(percpu_kstacks[n]) + i);
 			assert(check_va2pa(pgdir, base + KSTKGAP + i)
 				== PADDR(percpu_kstacks[n]) + i);
 		for (i = 0; i < KSTKGAP; i += PGSIZE)

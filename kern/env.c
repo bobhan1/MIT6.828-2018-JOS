@@ -101,6 +101,7 @@ envid2env(envid_t envid, struct Env **env_store, bool checkperm)
 	// or an immediate child of the current environment.
 	if (checkperm && e != curenv && e->env_parent_id != curenv->env_id) {
 		*env_store = 0;
+		cprintf("bad??????????????\n");
 		return -E_BAD_ENV;
 	}
 
@@ -550,6 +551,7 @@ env_run(struct Env *e)
 	curenv = e;
 	e->env_status = ENV_RUNNING;
 	++e->env_runs;
+	unlock_kernel();
 	lcr3(PADDR(e->env_pgdir));
 	env_pop_tf(&e->env_tf);
 }
