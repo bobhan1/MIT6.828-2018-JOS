@@ -85,7 +85,7 @@ sys_exofork(void)
 
 	// LAB 4: Your code here.
 	struct Env *env;
-	int ret = env_alloc(&env, 0);
+	int ret = env_alloc(&env, curenv->env_id);
 	if (ret < 0) {
 		return (envid_t)ret;
 	}
@@ -116,7 +116,7 @@ sys_env_set_status(envid_t envid, int status)
 	// LAB 4: Your code here.
 	// panic("sys_env_set_status not implemented");
 	struct Env *env;
-	if (status != ENV_RUNNABLE || status != ENV_NOT_RUNNABLE) {
+	if (status != ENV_RUNNABLE && status != ENV_NOT_RUNNABLE) {
 		return -E_BAD_ENV;
 	}
 	int ret = envid2env(envid, &env, 1);
