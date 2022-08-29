@@ -26,7 +26,7 @@ pgfault(struct UTrapframe *utf)
 
 	// LAB 4: Your code here.
 	if (!((err & FEC_WR) == FEC_WR) || !((uvpt[PGNUM(addr)] & PTE_COW) == PTE_COW)) {
-		panic("pgfault: the faulting access was not a write or not to a COW page!\n%u\n", err);
+		panic("pgfault: the faulting access was not a write or not to a COW page!");
 	}
 	// Allocate a new page, map it at a temporary location (PFTEMP),
 	// copy the data from the old page to the new page, then move the new
@@ -66,7 +66,7 @@ duppage(envid_t envid, unsigned pn)
 	// LAB 4: Your code here.
 	// panic("duppage not implemented");
 	void *addr = (void *)(pn * PGSIZE);
-	if ((uvpt[PGNUM(pn)] & PTE_W) == PTE_W || (uvpt[PGNUM(pn)] & PTE_COW) == PTE_COW) {
+	if ((uvpt[pn] & PTE_W) == PTE_W || (uvpt[pn] & PTE_COW) == PTE_COW) {
 		if ((r = sys_page_map(0, addr, envid, addr, PTE_COW | PTE_P | PTE_U)) < 0) {
 			panic("duppage panic: sys_page_map: %e!\n", r);
 		}
@@ -118,7 +118,7 @@ fork(void)
 
 	uintptr_t addr;
 	for (addr = 0; addr < USTACKTOP; addr += PGSIZE) {
-		if ((uvpd[PGNUM(addr)] & PTE_P) == PTE_P && (uvpt[PGNUM(addr)] & PTE_P) == PTE_P) {
+		if ((uvpd[PDX(addr)] & PTE_P) == PTE_P && (uvpt[PGNUM(addr)] & PTE_P) == PTE_P) {
 			duppage(envid, PGNUM(addr));	
 		}
 	}

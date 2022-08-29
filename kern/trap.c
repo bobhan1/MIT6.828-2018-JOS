@@ -354,7 +354,7 @@ page_fault_handler(struct Trapframe *tf)
 
 	// LAB 3: Your code here.
 	if ((tf->tf_cs & 0x3) == 0) {
-		panic("page_fault_handler: receive page fault in kernel mode!\n");
+		panic("page_fault_handler: receive page fault in kernel mode!");
 	}
 	// We've already handled kernel-mode exceptions, so if we get here,
 	// the page fault happened in user mode.
@@ -396,7 +396,7 @@ page_fault_handler(struct Trapframe *tf)
 			utf = (struct UTrapframe *)((char *)UXSTACKTOP - sizeof(struct UTrapframe));
 		}
 
-		user_mem_check(curenv, (void *)utf, sizeof(struct Trapframe), PTE_U | PTE_W | PTE_P);
+		user_mem_assert(curenv, (void *)utf, sizeof(struct UTrapframe), PTE_U | PTE_W | PTE_P);
 		
 		utf->utf_fault_va = fault_va;
 		utf->utf_err = tf->tf_err;
