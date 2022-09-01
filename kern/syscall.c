@@ -350,7 +350,7 @@ sys_ipc_try_send(envid_t envid, uint32_t value, void *srcva, unsigned perm)
 		if ((perm & PTE_W) == PTE_W && (*pte & PTE_W) == 0) {
 			return -E_INVAL;
 		}
-		if ((r = page_insert(env->env_pgdir, pp, srcva, perm)) < 0) {
+		if ((r = page_insert(env->env_pgdir, pp, env->env_ipc_dstva, perm)) < 0) {
 			return -E_NO_MEM;
 		}
 		env->env_ipc_perm = perm;
