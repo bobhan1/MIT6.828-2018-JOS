@@ -66,7 +66,11 @@ duppage(envid_t envid, unsigned pn)
 	// LAB 4: Your code here.
 	// panic("duppage not implemented");
 	void *addr = (void *)(pn * PGSIZE);
-	if ((uvpt[pn] & PTE_W) == PTE_W || (uvpt[pn] & PTE_COW) == PTE_COW) {
+	if ((uvpt[pn] & PTE_SHARE) == PTE_SHARE) {
+		if ((r = sys_page_map(0, addr, envid, addr, PTE_SYSCALL & uvpt[pn])) < 0) {
+			panic("duppage panic: sys_page_map: %e!\n", r);
+		}
+	} else if ((uvpt[pn] & PTE_W) == PTE_W || (uvpt[pn] & PTE_COW) == PTE_COW) {
 		if ((r = sys_page_map(0, addr, envid, addr, PTE_COW | PTE_P | PTE_U)) < 0) {
 			panic("duppage panic: sys_page_map: %e!\n", r);
 		}
