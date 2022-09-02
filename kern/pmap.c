@@ -212,14 +212,8 @@ mem_init(void)
 	//     Permissions: kernel RW, user NONE
 	// Your code goes here:
 	
-	// boot_map_region(kern_pgdir, KSTACKTOP-KSTKSIZE,
-	// 	ROUNDUP(KSTKSIZE, PGSIZE), PADDR(bootstack), PTE_W | PTE_P);
-	
-	
-	// Initialize the SMP-related parts of the memory map
-	mem_init_mp();
-
-
+	boot_map_region(kern_pgdir, KSTACKTOP-KSTKSIZE,
+		ROUNDUP(KSTKSIZE, PGSIZE), PADDR(bootstack), PTE_W | PTE_P);
 	//////////////////////////////////////////////////////////////////////
 	// Map all of physical memory at KERNBASE.
 	// Ie.  the VA range [KERNBASE, 2^32) should map to
@@ -231,7 +225,10 @@ mem_init(void)
 
 	boot_map_region(kern_pgdir, KERNBASE, 
 		ROUNDUP(0xffffffff - KERNBASE, PGSIZE), 0, PTE_P | PTE_W);
-
+	
+	// Initialize the SMP-related parts of the memory map
+	mem_init_mp();
+	
 	// Check that the initial page directory has been set up correctly.
 	check_kern_pgdir();
 
@@ -388,7 +385,7 @@ page_alloc(int alloc_flags)
 	if (alloc_flags & ALLOC_ZERO) {
 		phy = page2kva(res);
 		// cprintf("before memset() in page_alloc.\n");
-		memset(phy, '\0', PGSIZE);
+		memset(phy, 0, PGSIZE);
 	}
 	return res;
 }
@@ -569,7 +566,7 @@ page_lookup(pde_t *pgdir, void *va, pte_t **pte_store)
 	// Fill this function in
 	assert(pgdir);
 	pte_t *pte = pgdir_walk(pgdir, va, 0);
-	if (!pte) {
+	if (!pte || !((*pte) & PTE_P)) {
 		return NULL;
 	}
 	if (pte_store) {
