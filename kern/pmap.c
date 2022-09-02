@@ -387,6 +387,7 @@ page_alloc(int alloc_flags)
 	res->pp_link = NULL;
 	if (alloc_flags & ALLOC_ZERO) {
 		phy = page2kva(res);
+		// cprintf("before memset() in page_alloc.\n");
 		memset(phy, '\0', PGSIZE);
 	}
 	return res;

@@ -214,7 +214,7 @@ sys_page_alloc(envid_t envid, void *va, int perm)
 	if ((perm & (PTE_U | PTE_P)) != (PTE_U | PTE_P) || (perm & ~(PTE_SYSCALL)) != 0) {
 		return -E_INVAL;
 	}
-	if (!(pp = page_alloc(0))) {
+	if (!(pp = page_alloc(ALLOC_ZERO))) {
 		return -E_NO_MEM;
 	}
 	if ((ret = page_insert(env->env_pgdir, pp, va, perm)) < 0) {
@@ -356,6 +356,7 @@ sys_ipc_try_send(envid_t envid, uint32_t value, void *srcva, unsigned perm)
 	struct PageInfo *pp;
 
 	if ((r = envid2env(envid, &env, 0)) < 0) {
+		cprintf("envid: %u\n", (uint32_t)envid);
 		return -E_BAD_ENV;
 	}
 	if (!env->env_ipc_recving) {

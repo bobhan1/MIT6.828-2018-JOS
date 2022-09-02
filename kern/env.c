@@ -418,6 +418,7 @@ env_create(uint8_t *binary, enum EnvType type)
 	load_icode(env, binary);
 	env->env_type = type;
 	if (type == ENV_TYPE_FS) {
+		cprintf("fsenvid: %u\n", (uint32_t)env->env_id);
         env->env_tf.tf_eflags |= FL_IOPL_MASK;
     }
 }

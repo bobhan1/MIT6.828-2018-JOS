@@ -14,8 +14,12 @@ int
 sum(const char *s, int n)
 {
 	int i, tot = 0;
-	for (i = 0; i < n; i++)
+	for (i = 0; i < n; i++) {
+		if (n == 6000 && bss[i] != '\0') {
+			cprintf("bss[%d](%p):%u\n", i, &bss[i], (uint8_t)bss[i]);
+		}
 		tot ^= i * s[i];
+	}
 	return tot;
 }
 

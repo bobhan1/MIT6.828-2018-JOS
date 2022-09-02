@@ -68,7 +68,7 @@ alloc_block(void)
 		if ((bitmap[i / 32] & (1 << (i % 32)))) {
 			ret = i;
 			bitmap[i / 32] &= ~(1u << (i % 32));
-			flush_block(bitmap);
+			flush_block(&bitmap[i / 32]);
 			return ret;
 		}
 	}

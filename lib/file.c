@@ -16,13 +16,16 @@ static int
 fsipc(unsigned type, void *dstva)
 {
 	static envid_t fsenv;
-	if (fsenv == 0)
+	// if (fsenv == 0)
 		fsenv = ipc_find_env(ENV_TYPE_FS);
 
 	static_assert(sizeof(fsipcbuf) == PGSIZE);
 
 	if (debug)
 		cprintf("[%08x] fsipc %d %08x\n", thisenv->env_id, type, *(uint32_t *)&fsipcbuf);
+
+	// cprintf("[fsipc]: before ipc_send: fsenv(%p): %u (*0x804000):%u\n", &fsenv, (uint32_t)fsenv, *(uint32_t *)0x804000);
+	// cprintf("[fsipc]: before ipc_send: fsenv(%p): %u\n", &fsenv, (uint32_t)fsenv);
 
 	ipc_send(fsenv, type, &fsipcbuf, PTE_P | PTE_W | PTE_U);
 	return ipc_recv(NULL, dstva, NULL);

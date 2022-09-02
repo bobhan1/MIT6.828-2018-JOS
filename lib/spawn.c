@@ -19,6 +19,8 @@ static int copy_shared_pages(envid_t child);
 int
 spawn(const char *prog, const char **argv)
 {
+	cprintf("spawn: prog: %s\n", prog);
+
 	unsigned char elf_buf[512];
 	struct Trapframe child_tf;
 	envid_t child;
@@ -89,6 +91,8 @@ spawn(const char *prog, const char **argv)
 		return r;
 	fd = r;
 
+	// cprintf("before read elf header!\n");
+
 	// Read elf header
 	elf = (struct Elf*) elf_buf;
 	if (readn(fd, elf_buf, sizeof(elf_buf)) != sizeof(elf_buf)
@@ -129,7 +133,7 @@ spawn(const char *prog, const char **argv)
 	if ((r = copy_shared_pages(child)) < 0)
 		panic("copy_shared_pages: %e", r);
 
-	child_tf.tf_eflags |= FL_IOPL_3;   // devious: see user/faultio.c
+	// child_tf.tf_eflags |= FL_IOPL_3;   // devious: see user/faultio.c
 	if ((r = sys_env_set_trapframe(child, &child_tf)) < 0)
 		panic("sys_env_set_trapframe: %e", r);
 
@@ -281,6 +285,7 @@ map_segment(envid_t child, uintptr_t va, size_t memsz,
 			// allocate a blank page
 			if ((r = sys_page_alloc(child, (void*) (va + i), perm)) < 0)
 				return r;
+			// memset((void *)(va + i), 0, PGSIZE);
 		} else {
 			// from file
 			if ((r = sys_page_alloc(0, UTEMP, PTE_P|PTE_U|PTE_W)) < 0)

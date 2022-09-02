@@ -60,6 +60,7 @@ ipc_send(envid_t to_env, uint32_t val, void *pg, int perm)
 	// panic("ipc_send not implemented");
 	int r;
 	void *srcva = pg == NULL ? (void *)UTOP : pg;
+	// cprintf("to_env: %u\n", (uint32_t)to_env);
 	while ((r = sys_ipc_try_send(to_env, val, srcva, perm)) < 0) {
 		if (r != -E_IPC_NOT_RECV) {
 			panic("ipc_send panic: %e!", r);
@@ -74,6 +75,8 @@ ipc_send(envid_t to_env, uint32_t val, void *pg, int perm)
 envid_t
 ipc_find_env(enum EnvType type)
 {
+	// if (type == ENV_TYPE_FS) 
+	// 	cprintf("[ipc_find_env]: ENV_TYPE_FS\n");
 	int i;
 	for (i = 0; i < NENV; i++)
 		if (envs[i].env_type == type)
