@@ -4,6 +4,8 @@
 #include <kern/pci.h>
 #include <kern/pcireg.h>
 #include <kern/e1000.h>
+#include <kern/pmap.h>
+
 
 // Flag to do "lspci" at bootup
 static int pci_show_devs = 1;
@@ -31,6 +33,7 @@ struct pci_driver pci_attach_class[] = {
 // pci_attach_vendor matches the vendor ID and device ID of a PCI device. key1
 // and key2 should be the vendor ID and device ID respectively
 struct pci_driver pci_attach_vendor[] = {
+	{0x8086, E1000_DEV_ID_82540EM, &pic_e1000_attach},
 	{ 0, 0, 0 },
 };
 
@@ -186,6 +189,7 @@ pci_bridge_attach(struct pci_func *pcif)
 	return 1;
 }
 
+
 // External PCI subsystem interface
 
 void
@@ -232,6 +236,8 @@ pci_func_enable(struct pci_func *f)
 		pci_conf_write(f, bar, oldv);
 		f->reg_base[regnum] = base;
 		f->reg_size[regnum] = size;
+
+		cprintf("[%d] base: %x, size: %x\n", regnum, base, size);
 
 		if (size && !base)
 			cprintf("PCI device %02x:%02x.%d (%04x:%04x) "
