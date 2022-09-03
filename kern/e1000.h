@@ -18,12 +18,20 @@
 #define E1000_TDH 0x03810   /* TX Descriptor Head - RW */
 #define E1000_TDT 0x03818   /* TX Descripotr Tail - RW */
 
+#define E1000_TXD_STAT_DD    0x00000001 /* Descriptor Done */
+
+#define E1000_TXD_CMD_RS     0x00000008 /* Report Status */
+#define E1000_TXD_CMD_EOP    0x00000001 /* End of Packet */
+
+
 #define TDA_LEN 64 /* the length of the transmit descriptor array */
+#define TDA_BUF_LEN 1518 /* the length of buffer for a transimit descriptor */
 
 #define E1000_REG(offset) (void *)(e1000_bar0 + offset)
 
 int pic_e1000_attach(struct pci_func *pcif);
 void e1000_transmit_init();
+int try_transmit_packet(void *data, size_t len);
 
 struct e1000_tx_desc
 {
