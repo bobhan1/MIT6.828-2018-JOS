@@ -24,7 +24,7 @@
 #define E1000_TXD_CMD_EOP    0x00000001 /* End of Packet */
 
 
-#define TDA_LEN 64 /* the length of the transmit descriptor array */
+#define TDA_LEN 32 /* the length of the transmit descriptor array */
 #define TDA_BUF_LEN 1518 /* the length of buffer for a transimit descriptor */
 
 #define E1000_REG(offset) (void *)(e1000_bar0 + offset)

@@ -62,14 +62,14 @@ void e1000_transmit_init()
     tipg->ipgr2 = 6;
 
     // test for transmiting packets
-    char buf[] = "hello";
-    int r = transmit_packet(buf, 6);
-    transmit_packet(buf, 6);
-    transmit_packet(buf, 6);
-    transmit_packet(buf, 6);
-    transmit_packet(buf, 6);
-    transmit_packet(buf, 6);
-    transmit_packet(buf, 6);
+    // char buf[] = "hello";
+    // int r = try_transmit_packet(buf, 6);
+    // try_transmit_packet(buf, 6);
+    // try_transmit_packet(buf, 6);
+    // try_transmit_packet(buf, 6);
+    // try_transmit_packet(buf, 6);
+    // try_transmit_packet(buf, 6);
+    // try_transmit_packet(buf, 6);
     
 }
 
@@ -86,8 +86,11 @@ int try_transmit_packet(void *data, size_t len)
     memcpy(tda_buf[cur], data, len);
     tda[cur].length = len;
     tda[cur].cmd |= (E1000_TXD_CMD_EOP | E1000_TXD_CMD_RS);
-    cprintf("cmd: %u\n", tda[cur].cmd);
+    // cprintf("cmd: %u\n", tda[cur].cmd);
     tda[cur].status &= ~E1000_TXD_STAT_DD;
     *tdt = (cur + 1) % TDA_LEN;
+    cprintf("tdt:%u\n", *tdt);
+    tdt = (uint32_t *)E1000_REG(E1000_TDT);
+    cprintf("E1000_REG(E1000_TDT): %u\n", *tdt);
     return 0;
 }

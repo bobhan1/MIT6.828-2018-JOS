@@ -12,6 +12,7 @@
 #include <kern/console.h>
 #include <kern/sched.h>
 #include <kern/time.h>
+#include <kern/e1000.h>
 
 // Print a string to the system console.
 // The string is exactly 'len' characters long.
@@ -425,6 +426,19 @@ sys_time_msec(void)
 	return time_msec();
 }
 
+static int
+sys_try_transmit_packet(envid_t envid, void *data, size_t len)
+{
+	struct Env *env;
+	int r;
+	if ((r = envid2env(envid, &env, 0)) < 0) {
+		return -E_BAD_ENV;
+	}
+	user_mem_assert(env, data, len, PTE_U | PTE_P);
+	return try_transmit_packet(data, len);
+}
+
+
 // Dispatches to the correct kernel function, passing the arguments.
 int32_t
 syscall(uint32_t syscallno, uint32_t a1, uint32_t a2, uint32_t a3, uint32_t a4, uint32_t a5)
@@ -482,6 +496,9 @@ syscall(uint32_t syscallno, uint32_t a1, uint32_t a2, uint32_t a3, uint32_t a4, 
 	}
 	case SYS_time_msec: {
 		return sys_time_msec();
+	}
+	case SYS_try_transmit_packet: {
+		return sys_try_transmit_packet((envid_t)a1, (void *)a2, (size_t)a3);
 	}
 	default:
 		return -E_INVAL;
